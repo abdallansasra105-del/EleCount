@@ -1,11 +1,11 @@
-package com.example.Abdallansasra.model;
+package com.example.elecount.model;
 
 import androidx.annotation.NonNull;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
 
-public class Stud {
+public class Owner {
 
     @SerializedName("$id")
     private String id; // معرف المستند من Appwrite
@@ -15,13 +15,12 @@ public class Stud {
 
     private String imageUrl ;
 
-    public Stud() {}
+    public Owner() {}
 
-    public Stud(String name, Date age,String imageUrl   ) {
+    public Owner(String name, Date age, String imageUrl) {
         this.name = name;
         this.age = age;
         this.imageUrl = imageUrl;
-
     }
 
     public String getId() {

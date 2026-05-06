@@ -15,7 +15,7 @@
         android:padding="12dp"
         android:gravity="center_vertical">
 
-        <!-- صورة الطالب -->
+        <!-- صورة المالك -->
         <androidx.cardview.widget.CardView
             android:layout_width="60dp"
             android:layout_height="60dp"
@@ -23,15 +23,15 @@
             app:cardElevation="2dp">
 
             <ImageView
-                android:id="@+id/ivstd"
+                android:id="@+id/ivowner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:contentDescription="صورة الطالب" />
+                android:contentDescription="صورة المالك" />
 
         </androidx.cardview.widget.CardView>
 
-        <!-- معلومات الطالب -->
+        <!-- معلومات المالك -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -39,12 +39,12 @@
             android:orientation="vertical"
             android:layout_marginStart="12dp">
 
-            <!-- اسم الطالب -->
+            <!-- اسم المالك -->
             <TextView
                 android:id="@+id/tvsname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="اسم الطالب"
+                android:text="اسم المالك"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#212121"

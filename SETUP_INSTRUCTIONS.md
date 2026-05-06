@@ -1,4 +1,4 @@
-# 🚀 FiveUntProjectBase - Appwrite Integration
+# 🚀 EleCount - Appwrite Integration
 
 ## ✅ البناء والحالة
 
@@ -15,7 +15,7 @@ BUILD SUCCESSFUL in 5s
 ```bash
 # افتح Android Studio
 # اضغط "Open an Existing Project"
-# اختر مجلد: E:\FiveUntProjectBase
+# اختر مجلد: E:\EleCount
 ```
 
 ### 2. تشغيل التطبيق

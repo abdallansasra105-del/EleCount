@@ -1,4 +1,4 @@
-package com.example.Abdallansasra.adapter;
+package com.example.elecount.adapter;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,104 +12,94 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.Abdallansasra.Hellper.DALAppWriteConnection;
-import com.example.Abdallansasra.R;
-import com.example.Abdallansasra.model.Stud;
+import com.example.elecount.Hellper.DALAppWriteConnection;
+import com.example.elecount.R;
+import com.example.elecount.model.Owner;
 
 import java.util.ArrayList;
 
-public class StdAdapter extends RecyclerView.Adapter<StdAdapter.ViewHolder> {
+public class OwnerAdapter extends RecyclerView.Adapter<OwnerAdapter.ViewHolder> {
 
-
-    ArrayList<Stud> stdList;
+    ArrayList<Owner> ownerList;
     DALAppWriteConnection dal;
     
-    public StdAdapter(ArrayList<Stud> stdList, DALAppWriteConnection dal) {
-        this.stdList = stdList;
+    public OwnerAdapter(ArrayList<Owner> ownerList, DALAppWriteConnection dal) {
+        this.ownerList = ownerList;
         this.dal = dal;
     }
 
     @NonNull
     @Override
-    public StdAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_std, parent, false);
+    public OwnerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_owner, parent, false);
         return new ViewHolder(view);
-
     }
 
     @Override
-    public void onBindViewHolder(@NonNull StdAdapter.ViewHolder holder, int position) {
-            Stud student = stdList.get(position);
+    public void onBindViewHolder(@NonNull OwnerAdapter.ViewHolder holder, int position) {
+            Owner owner = ownerList.get(position);
             
-            holder.tvsname.setText(student.getName());
-            holder.tvage.setText(student.getAge() != null ? student.getAge().toString() : "N/A"); // Display date
+            holder.tvsname.setText(owner.getName());
+            holder.tvage.setText(owner.getAge() != null ? owner.getAge().toString() : "N/A");
             
-            // تحميل الصورة مع إضافة headers للـ Appwrite
             Glide.with(holder.itemView.getContext())
-                .load(new com.bumptech.glide.load.model.GlideUrl(student.getImageUrl(), 
+                .load(new com.bumptech.glide.load.model.GlideUrl(owner.getImageUrl(), 
                     new com.bumptech.glide.load.model.LazyHeaders.Builder()
                         .addHeader("X-Appwrite-Project", "69033828003328299847")
                         .addHeader("X-Appwrite-Key", "standard_2b5b7365808986dc2e7724df693d7e68b81f3ec6511ae1c7980a4be803a7b7d1a4de9e89805f53bbf1eceee468d61fc760d2eb3dcfe50647375d8b05ed16d7c911cf7f11a0ea48dfe678291aa169a29116e5adc85ff3dc7ebb9bb33c87ac975368c36a79dbd2ebe045811f459c851b59025a22c136a513c012bd3fff339386dd")
                         .build()))
-                .into(holder.ivstd);
+                .into(holder.ivowner);
             
             holder.btnDelete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // التحقق من وجود ID
-                    if (student.getId() == null || student.getId().isEmpty()) {
+                    if (owner.getId() == null || owner.getId().isEmpty()) {
                         Toast.makeText(v.getContext(), "❌ لا يمكن الحذف: معرف غير صالح", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     
-                    // عرض رسالة تأكيد
                     Toast.makeText(v.getContext(), "🗑️ جاري الحذف...", Toast.LENGTH_SHORT).show();
                     
-                    // حذف من قاعدة البيانات في خيط منفصل
                     new Thread(() -> {
                         DALAppWriteConnection.OperationResult<Void> result = 
-                            dal.deleteData("std", student.getId(), null);
+                            dal.deleteData("owner", owner.getId(), null);
                         
-                        // الرجوع إلى الخيط الرئيسي لتحديث الواجهة
                         holder.itemView.post(() -> {
                             if (result.success) {
-                                // حذف من القائمة وتحديث RecyclerView
                                 int adapterPosition = holder.getAdapterPosition();
                                 if (adapterPosition != RecyclerView.NO_POSITION) {
-                                    stdList.remove(adapterPosition);
+                                    ownerList.remove(adapterPosition);
                                     notifyItemRemoved(adapterPosition);
-                                    notifyItemRangeChanged(adapterPosition, stdList.size());
+                                    notifyItemRangeChanged(adapterPosition, ownerList.size());
                                 }
                                 
                                 Toast.makeText(v.getContext(), "✅ تم الحذف بنجاح", Toast.LENGTH_SHORT).show();
-                                Log.d("StdAdapter", "تم حذف الطالب: " + student.getName());
+                                Log.d("OwnerAdapter", "تم حذف المالك: " + owner.getName());
                             } else {
                                 Toast.makeText(v.getContext(), "❌ فشل الحذف: " + result.message, Toast.LENGTH_LONG).show();
-                                Log.e("StdAdapter", "فشل حذف الطالب: " + result.message);
+                                Log.e("OwnerAdapter", "فشل حذف المالك: " + result.message);
                             }
                         });
                     }).start();
                 }});
-
     }
 
     @Override
     public int getItemCount() {
-        return stdList.size();
+        return ownerList.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvsname;
         TextView tvage;
-        ImageView ivstd;
+        ImageView ivowner;
         TextView btnDelete;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvsname= itemView.findViewById(R.id.tvsname);
             tvage= itemView.findViewById(R.id.tvage);
-            ivstd= itemView.findViewById(R.id.ivstd);
+            ivowner= itemView.findViewById(R.id.ivowner);
             btnDelete= itemView.findViewById(R.id.btnDelete);
-
         }
     }
 }

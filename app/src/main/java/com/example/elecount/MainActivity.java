@@ -1,4 +1,4 @@
-package com.example.Abdallansasra;
+package com.example.elecount;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -23,10 +23,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.Abdallansasra.Hellper.DALAppWriteConnection;
-import com.example.Abdallansasra.R;
-import com.example.Abdallansasra.adapter.StdAdapter;
-import com.example.Abdallansasra.model.Stud;
+import com.example.elecount.Hellper.DALAppWriteConnection;
+import com.example.elecount.R;
+import com.example.elecount.adapter.OwnerAdapter;
+import com.example.elecount.model.Owner;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
     
     Button btadd, btnPickDate;
     RecyclerView recyclerView;
-    StdAdapter adapter;
-    ArrayList<Stud> stdList = new ArrayList<>();
+    OwnerAdapter adapter;
+    ArrayList<Owner> ownerList = new ArrayList<>();
     private DALAppWriteConnection dal;
     
     // الحقول الجديدة
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         // تهيئة RecyclerView
         recyclerView = findViewById(R.id.rc);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new StdAdapter(stdList, dal);
+        adapter = new OwnerAdapter(ownerList, dal);
         recyclerView.setAdapter(adapter);
 
         // زر الإضافة
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // حفظ البيانات من الحقول
-                saveStudentFromFields();
+                saveOwnerFromFields();
             }
         });
         
@@ -297,9 +297,9 @@ public class MainActivity extends AppCompatActivity {
     }
     
     /**
-     * حفظ الطالب من الحقول
+     * حفظ المالك من الحقول
      */
-    private void saveStudentFromFields() {
+    private void saveOwnerFromFields() {
         // جلب البيانات من الحقول
         String name = etName.getText().toString().trim();
         
@@ -319,24 +319,24 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         
-        // إنشاء كائن Stud جديد
-        Stud newStudent = new Stud(name, selectedDate, selectedImageUrl);
+        // إنشاء كائن Owner جديد
+        Owner newOwner = new Owner(name, selectedDate, selectedImageUrl);
         
         // حفظ في قاعدة البيانات
-        saveStudent(newStudent);
+        saveOwner(newOwner);
     }
     
     /**
-     * حفظ الطالب في قاعدة البيانات
+     * حفظ المالك في قاعدة البيانات
      */
-    private void saveStudent(Stud student) {
-        String tableName = "std";
+    private void saveOwner(Owner owner) {
+        String tableName = "owner";
         String collectionId = null;
         
         new Thread(() -> {
             try {
-                DALAppWriteConnection.OperationResult<ArrayList<Stud>> result = dal.saveData(
-                    student,
+                DALAppWriteConnection.OperationResult<ArrayList<Owner>> result = dal.saveData(
+                    owner,
                     tableName,
                     collectionId
                 );
@@ -387,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
         );
 
 */
-        Stud stud = new Stud(
+        Owner owner = new Owner(
                 "sleman",
                 new Date(),
                 "https://share7a.com/wp-content/uploads/2023/12/1000071380.jpg"
@@ -395,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
 
         
         // تعريف المتغيرات
-        String tableName = "std"; // اسم الجدول الجديد
+        String tableName = "owner"; // اسم الجدول الجديد
         String collectionId = null; // null لأننا نستخدم tableName كـ collection ID
         
 
@@ -404,8 +404,8 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
                 // استدعاء saveData
-                DALAppWriteConnection.OperationResult<ArrayList<Stud>> result = dal.saveData(
-                    stud,           // البيانات (Clothes object)
+                DALAppWriteConnection.OperationResult<ArrayList<Owner>> result = dal.saveData(
+                    owner,           // البيانات
                     tableName,       // اسم الجدول
                     collectionId     // Collection ID (null)
                 );
@@ -416,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (result.success) {
                         // نجح الحفظ
-                        ArrayList<Stud> savedItems = result.data;
+                        ArrayList<Owner> savedItems = result.data;
                         testGetData();
                             
                     } else {
@@ -445,7 +445,7 @@ public class MainActivity extends AppCompatActivity {
     private void testGetData() {
         Log.d("GET_DATA_TEST", "=== بدء اختبار getData ===");
         
-        String tableName = "std";
+        String tableName = "owner";
         String collectionId = null;
         
         Log.d("GET_DATA_TEST", "جلب البيانات من الجدول: " + tableName);
@@ -453,10 +453,10 @@ public class MainActivity extends AppCompatActivity {
         // تشغيل getData في Thread منفصل
         new Thread(() -> {
             try {
-                DALAppWriteConnection.OperationResult<ArrayList<Stud>> result = dal.getData(
+                DALAppWriteConnection.OperationResult<ArrayList<Owner>> result = dal.getData(
                     tableName,       // اسم الجدول
                     collectionId,    // Collection ID (null)
-                    Stud.class       // نوع الكلاس المطلوب
+                    Owner.class       // نوع الكلاس المطلوب
                 );
                 
                 Log.d("GET_DATA_TEST", "انتهى استدعاء getData");
@@ -464,20 +464,20 @@ public class MainActivity extends AppCompatActivity {
                 
                 runOnUiThread(() -> {
                     if (result.success) {
-                        ArrayList<Stud> fetchedList = result.data;
+                        ArrayList<Owner> fetchedList = result.data;
                         
                         // تحديث القائمة وإشعار الـ Adapter
-                        stdList.clear();
-                        stdList.addAll(fetchedList);
+                        ownerList.clear();
+                        ownerList.addAll(fetchedList);
                         adapter.notifyDataSetChanged();
                         
                         Toast.makeText(MainActivity.this, 
-                            "✅ تم جلب " + stdList.size() + " طالب",
+                            "✅ تم جلب " + ownerList.size() + " مالك",
                             Toast.LENGTH_SHORT).show();
                             
                         // طباعة العناصر في Logcat
-                        for (Stud stud : stdList) {
-                            Log.d("STUD_ITEM", "الطالب: " + stud.toString() + ", ID: " + stud.getId());
+                        for (Owner owner : ownerList) {
+                            Log.d("OWNER_ITEM", "المالك: " + owner.toString() + ", ID: " + owner.getId());
                         }
                     } else {
                         Toast.makeText(MainActivity.this, 
