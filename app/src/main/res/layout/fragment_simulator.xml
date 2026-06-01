@@ -63,22 +63,88 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- اختيار الجهاز -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/simulator_select_device"
-                    android:textColor="@color/text_primary"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <Spinner
-                    android:id="@+id/deviceSpinner"
+                <!-- اختيار الجهاز (للمستخدم المسجّل) -->
+                <LinearLayout
+                    android:id="@+id/deviceSelectSection"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@android:drawable/editbox_background"
-                    android:padding="12dp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/simulator_select_device"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <Spinner
+                        android:id="@+id/deviceSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:drawable/editbox_background"
+                        android:padding="12dp" />
+
+                </LinearLayout>
+
+                <!-- إدخال يدوي للضيف -->
+                <LinearLayout
+                    android:id="@+id/guestSimulatorSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/simulator_guest_hint"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/simulator_power_kw"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/powerInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:drawable/editbox_background"
+                        android:hint="مثال: 2.5"
+                        android:inputType="numberDecimal"
+                        android:padding="12dp"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/simulator_price_per_kw"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/pricePerKwInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@android:drawable/editbox_background"
+                        android:hint="مثال: 0.60"
+                        android:inputType="numberDecimal"
+                        android:padding="12dp"
+                        android:text="0.60"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
 
                 <!-- مدة التشغيل -->
                 <TextView
@@ -220,6 +286,43 @@
                         android:textStyle="bold" />
 
                 </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- العودة لتسجيل الدخول (وضع الضيف فقط) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/guestLoginCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/guest_mode_hint"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/guestLoginButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/colorAccent"
+                    android:text="@string/guest_back_to_login"
+                    android:textColor="@color/white"
+                    android:textSize="15sp" />
 
             </LinearLayout>
 

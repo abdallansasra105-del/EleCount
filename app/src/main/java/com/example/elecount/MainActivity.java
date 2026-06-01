@@ -1,6 +1,9 @@
 package com.example.elecount;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
@@ -10,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.elecount.Hellper.SystemBarsHelper;
+import com.example.elecount.Hellper.UserSession;
 
 import com.example.elecount.fragments.DevicesFragment;
 import com.example.elecount.fragments.HomeFragment;
@@ -26,6 +30,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * يعرض الـ Fragments المختلفة حسب اختيار المستخدم
  */
 public class MainActivity extends AppCompatActivity {
+
+    public static final String EXTRA_GUEST_MODE = "guest_mode";
     
     // Toolbar العلوي
     private Toolbar toolbar;
@@ -35,10 +41,15 @@ public class MainActivity extends AppCompatActivity {
     
     // الـ Fragment الحالي المعروض
     private Fragment currentFragment;
+
+    private boolean guestMode;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        guestMode = getIntent().getBooleanExtra(EXTRA_GUEST_MODE, false)
+                || UserSession.isGuest(this);
         
         // فرض اتجاه RTL للعربية
         getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
@@ -57,9 +68,16 @@ public class MainActivity extends AppCompatActivity {
         // إعداد معالج زر الرجوع (Back Button Handler)
         setupBackPressedHandler();
         
-        // عرض الـ Fragment الرئيسي عند بداية التطبيق
+        // عرض الشاشة المناسبة عند بداية التطبيق
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment());
+            if (guestMode) {
+                loadFragment(new SimulatorFragment(), false);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(R.string.menu_simulator);
+                }
+            } else {
+                loadFragment(new HomeFragment(), false);
+            }
         }
     }
     
@@ -81,6 +99,12 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupBottomNavigation() {
         bottomNavigation = findViewById(R.id.bottomNavigation);
+
+        if (guestMode) {
+            bottomNavigation.setVisibility(View.GONE);
+            return;
+        }
+
         bottomNavigation.setLabelVisibilityMode(
                 BottomNavigationView.LABEL_VISIBILITY_LABELED);
         
@@ -115,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             
             // تحميل الـ Fragment المختار
             if (selectedFragment != null) {
-                loadFragment(selectedFragment);
+                loadFragment(selectedFragment, true);
                 
                 // تحديث عنوان Toolbar
                 if (getSupportActionBar() != null) {
@@ -137,47 +161,69 @@ public class MainActivity extends AppCompatActivity {
      * تدعم back gestures (الإيماءات) في Android 10 وما فوق
      */
     private void setupBackPressedHandler() {
-        // إنشاء callback جديد لمعالجة زر الرجوع
         OnBackPressedCallback callback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // إذا كان هناك أكثر من fragment في back stack
+                if (guestMode) {
+                    openLoginScreen();
+                    return;
+                }
                 if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                    // الرجوع للـ fragment السابق
                     getSupportFragmentManager().popBackStack();
                 } else {
-                    // إذا كنا في الصفحة الرئيسية، تعطيل الـ callback
-                    // والسماح للنظام بالخروج من التطبيق
                     setEnabled(false);
                     getOnBackPressedDispatcher().onBackPressed();
                 }
             }
         };
-        
-        // تسجيل الـ callback مع OnBackPressedDispatcher
+
         getOnBackPressedDispatcher().addCallback(this, callback);
     }
+
+    /** العودة لشاشة تسجيل الدخول (من وضع الضيف) */
+    public void openLoginScreen() {
+        UserSession.clear(this);
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (guestMode) {
+            getMenuInflater().inflate(R.menu.menu_guest, menu);
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (guestMode && item.getItemId() == R.id.action_guest_login) {
+            openLoginScreen();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     
+    private void loadFragment(Fragment fragment) {
+        loadFragment(fragment, true);
+    }
+
     /**
      * تحميل Fragment في الـ Container
      * @param fragment الـ Fragment المراد عرضه
+     * @param addToBackStack إضافة إلى back stack
      */
-    private void loadFragment(Fragment fragment) {
-        // بدء transaction لتغيير الـ Fragment
+    private void loadFragment(Fragment fragment, boolean addToBackStack) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        
-        // استبدال الـ Fragment الحالي بالجديد
         transaction.replace(R.id.fragmentContainer, fragment);
-        
-        // إضافة إلى back stack (للسماح بالرجوع)
-        if (currentFragment != null) {
+
+        if (addToBackStack && currentFragment != null) {
             transaction.addToBackStack(null);
         }
-        
-        // تنفيذ التغيير
+
         transaction.commit();
-        
-        // حفظ الـ Fragment الحالي
         currentFragment = fragment;
     }
 }

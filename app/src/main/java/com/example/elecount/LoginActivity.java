@@ -137,8 +137,14 @@ public class LoginActivity extends AppCompatActivity {
         // رابط التبديل بين تسجيل الدخول والتسجيل
         switchButton.setOnClickListener(v -> toggleMode());
         
-        // زر الدخول كضيف
-        guestButton.setOnClickListener(v -> goToMainActivity());
+        // زر الدخول كضيف — المحاكي فقط
+        guestButton.setOnClickListener(v -> {
+            UserSession.enterGuestMode(this);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(MainActivity.EXTRA_GUEST_MODE, true);
+            startActivity(intent);
+            finish();
+        });
     }
     
     /**

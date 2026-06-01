@@ -12,6 +12,7 @@ public final class UserSession {
 
     public static final String PREFS_NAME = "EleCountPrefs";
     private static final String KEY_IS_LOGGED_IN = "isLoggedIn";
+    private static final String KEY_IS_GUEST = "isGuest";
     private static final String KEY_USER_ID = "userId";
     private static final String KEY_USER_NAME = "userName";
     private static final String KEY_USER_EMAIL = "userEmail";
@@ -24,11 +25,28 @@ public final class UserSession {
         return prefs(context).getBoolean(KEY_IS_LOGGED_IN, false);
     }
 
+    public static boolean isGuest(Context context) {
+        return prefs(context).getBoolean(KEY_IS_GUEST, false);
+    }
+
+    /** وضع الضيف: المحاكي فقط */
+    public static void enterGuestMode(Context context) {
+        SharedPreferences.Editor editor = prefs(context).edit();
+        editor.putBoolean(KEY_IS_GUEST, true);
+        editor.putBoolean(KEY_IS_LOGGED_IN, false);
+        editor.remove(KEY_USER_ID);
+        editor.remove(KEY_USER_NAME);
+        editor.remove(KEY_USER_EMAIL);
+        editor.remove(KEY_USER_IMAGE);
+        editor.apply();
+    }
+
     public static void save(Context context, User user) {
         if (user == null) {
             return;
         }
         SharedPreferences.Editor editor = prefs(context).edit();
+        editor.putBoolean(KEY_IS_GUEST, false);
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.putString(KEY_USER_ID, user.getId());
         editor.putString(KEY_USER_NAME, user.getName());

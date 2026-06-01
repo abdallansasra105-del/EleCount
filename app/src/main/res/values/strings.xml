@@ -56,6 +56,9 @@
     <string name="simulator_title">محاكي التكلفة</string>
     <string name="simulator_description">احسب التكلفة المتوقعة لتشغيل جهاز</string>
     <string name="simulator_select_device">اختر جهاز</string>
+    <string name="simulator_power_kw">استهلاك الجهاز (كيلو واط)</string>
+    <string name="simulator_price_per_kw">سعر الكيلو واط (شيكل)</string>
+    <string name="simulator_guest_hint">أدخل استهلاك الجهاز وسعر الكهرباء ثم المدة</string>
     <string name="simulator_duration">مدة التشغيل</string>
     <string name="simulator_hours">ساعات</string>
     <string name="simulator_days">أيام</string>
@@ -90,6 +93,8 @@
     <string name="settings_change_photo">تغيير الصورة</string>
     <string name="settings_profile_saved">تم حفظ الملف الشخصي</string>
     <string name="settings_login_required">سجّل دخولك لتعديل الملف الشخصي</string>
+    <string name="guest_back_to_login">تسجيل الدخول / إنشاء حساب</string>
+    <string name="guest_mode_hint">أنت تستخدم المحاكي كضيف. للحصول على كل المميزات سجّل دخولك أو أنشئ حساباً.</string>
     
     <!-- تسجيل الدخول والتسجيل -->
     <string name="login_title">تسجيل الدخول</string>
