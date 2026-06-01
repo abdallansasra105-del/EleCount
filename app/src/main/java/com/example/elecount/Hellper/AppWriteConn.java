@@ -780,6 +780,9 @@ public class AppWriteConn {
                     if ("usage_records".equals(collectionKey)) {
                         documentData.put("usagerecordId", documentId);
                     }
+                    if ("devices".equals(collectionKey)) {
+                        documentData.put("deviceId", documentId);
+                    }
                     
                     boolean saved = saveDocument(tableName, actualCollectionId, documentId, documentData);
                     if (saved) {
@@ -903,7 +906,12 @@ public class AppWriteConn {
             documentData.remove("class");
             documentData.remove("metadata");
             documentData.remove("id");
-            documentData.remove("deviceId");
+            String collectionKey = collectionId != null ? collectionId : tableName;
+            if ("devices".equals(collectionKey)) {
+                documentData.put("deviceId", documentId);
+            } else {
+                documentData.remove("deviceId");
+            }
             
             // Gson يرسل أحياناً running بدل isRunning
             if (documentData.containsKey("running") && !documentData.containsKey("isRunning")) {
@@ -1242,6 +1250,7 @@ public class AppWriteConn {
         DEVICES_AUTO_ATTRIBUTES.put("imageUrl", "imageUrl:url:false:Image URL");
         DEVICES_AUTO_ATTRIBUTES.put("categoryName", "categoryName:string:false:Category Name");
         USERS_AUTO_ATTRIBUTES.put("pricePerKw", "pricePerKw:float:false:Price per kW");
+        USERS_AUTO_ATTRIBUTES.put("imageUrl", "imageUrl:url:false:Profile image URL");
     }
     
     private String getAutoAttributeSchema(String collectionId, String attributeName) {
@@ -1263,6 +1272,10 @@ public class AppWriteConn {
         }
         if (payload.containsKey("pricePerKw")) {
             ensureAttributeProvisioned(collection, "pricePerKw", tableName);
+        }
+        if (payload.containsKey("imageUrl") && payload.get("imageUrl") != null
+                && !String.valueOf(payload.get("imageUrl")).isEmpty()) {
+            ensureAttributeProvisioned(collection, "imageUrl", tableName);
         }
     }
     
@@ -1618,10 +1631,6 @@ public class AppWriteConn {
                     && !"usage_records".equals(collectionId)) {
                 continue;
             }
-            // deviceId حقل حقيقي في usage_records — نحذفه فقط من devices
-            if (key.equals("deviceId") && "devices".equals(collectionId)) {
-                continue;
-            }
             if (key.equals("categoryName") && "devices".equals(collectionId)) {
                 continue;
             }
@@ -1938,7 +1947,7 @@ public class AppWriteConn {
     public byte[] downloadStorageFile(String fileUrl) {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL(fileUrl);
+            URL url = new URL(normalizeStorageFileUrl(fileUrl));
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("X-Appwrite-Project", PROJECT_ID);
@@ -1970,6 +1979,24 @@ public class AppWriteConn {
                 connection.disconnect();
             }
         }
+    }
+
+    /**
+     * توحيد روابط التخزين القديمة/المختصرة لتعمل على جميع الأجهزة
+     */
+    public String normalizeStorageFileUrl(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return fileUrl;
+        }
+        String normalized = fileUrl.replace("https://cloud.appwrite.io/v1", BASE_URL);
+        if (normalized.contains("/storage/buckets/") && normalized.contains("/files/")
+                && !normalized.contains("/download") && !normalized.contains("/view")) {
+            if (normalized.endsWith("/")) {
+                normalized = normalized.substring(0, normalized.length() - 1);
+            }
+            normalized = normalized + "/download?project=" + PROJECT_ID;
+        }
+        return normalized;
     }
     
     /**

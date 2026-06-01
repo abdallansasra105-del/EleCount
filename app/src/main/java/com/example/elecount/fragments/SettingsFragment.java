@@ -349,6 +349,15 @@ public class SettingsFragment extends Fragment {
                     }
 
                     @Override
+                    public void onSuccess(User result, String warning) {
+                        onSuccess(result);
+                        if (isAdded() && warning != null && !warning.isEmpty()) {
+                            requireActivity().runOnUiThread(() ->
+                                    Toast.makeText(requireContext(), warning, Toast.LENGTH_LONG).show());
+                        }
+                    }
+
+                    @Override
                     public void onError(String error) {
                         if (isAdded()) {
                             requireActivity().runOnUiThread(() ->
@@ -358,7 +367,7 @@ public class SettingsFragment extends Fragment {
                 });
 
         if (selectedImageUri != null) {
-            dataManager.uploadImage(requireContext(), selectedImageUri,
+            dataManager.uploadProfileImage(requireContext(), selectedImageUri,
                     new DataManager.DataCallback<String>() {
                         @Override
                         public void onSuccess(String imageUrl) {

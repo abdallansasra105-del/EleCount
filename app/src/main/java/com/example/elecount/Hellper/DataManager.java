@@ -178,9 +178,23 @@ public class DataManager {
                 if (result.success && result.data != null) {
                     for (User user : result.data) {
                         if (email.equals(user.getEmail()) && password.equals(user.getPassword())) {
-                            currentUser = user;
-                            Log.d(TAG, "تم تسجيل الدخول: " + user.getName());
-                            callback.onSuccess(user);
+                            User freshUser = user;
+                            if (user.getId() != null && !user.getId().isEmpty()) {
+                                AppWriteConn.OperationResult<User> fetchResult =
+                                        appWriteConn.getDataById(TABLE_USERS, user.getId(), TABLE_USERS, User.class);
+                                if (fetchResult.success && fetchResult.data != null) {
+                                    freshUser = fetchResult.data;
+                                    if (freshUser.getId() == null || freshUser.getId().isEmpty()) {
+                                        freshUser.setId(user.getId());
+                                    }
+                                }
+                            }
+                            if (freshUser.getImageUrl() != null && !freshUser.getImageUrl().isEmpty()) {
+                                freshUser.setImageUrl(appWriteConn.normalizeStorageFileUrl(freshUser.getImageUrl()));
+                            }
+                            currentUser = freshUser;
+                            Log.d(TAG, "تم تسجيل الدخول: " + freshUser.getName());
+                            callback.onSuccess(freshUser);
                             return;
                         }
                     }
@@ -231,6 +245,31 @@ public class DataManager {
     /**
      * استكمال معرف المستخدم للجلسات القديمة التي لا تحتوي userId
      */
+    private void pushUserImageUrlToCloud(User user) {
+        if (user == null || user.getId() == null || user.getId().isEmpty()
+                || user.getImageUrl() == null || user.getImageUrl().isEmpty()) {
+            return;
+        }
+        try {
+            AppWriteConn.OperationResult<User> fetchResult =
+                    appWriteConn.getDataById(TABLE_USERS, user.getId(), TABLE_USERS, User.class);
+            User toUpdate = fetchResult.success && fetchResult.data != null ? fetchResult.data : user;
+            if (toUpdate.getId() == null || toUpdate.getId().isEmpty()) {
+                toUpdate.setId(user.getId());
+            }
+            toUpdate.setImageUrl(appWriteConn.normalizeStorageFileUrl(user.getImageUrl()));
+            AppWriteConn.OperationResult<User> result =
+                    appWriteConn.updateData(toUpdate, TABLE_USERS, user.getId(), TABLE_USERS);
+            if (result.success) {
+                Log.d(TAG, "تم مزامنة صورة الملف الشخصي إلى السحابة");
+            } else {
+                Log.w(TAG, "فشل مزامنة صورة الملف الشخصي: " + result.message);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "pushUserImageUrlToCloud", e);
+        }
+    }
+
     public void resolveSessionUser(android.content.Context context, DataCallback<User> callback) {
         executor.execute(() -> {
             try {
@@ -260,6 +299,15 @@ public class DataManager {
                 }
 
                 User resolved = fromCloud;
+                if (resolved.getImageUrl() != null && !resolved.getImageUrl().isEmpty()) {
+                    resolved.setImageUrl(appWriteConn.normalizeStorageFileUrl(resolved.getImageUrl()));
+                }
+                if ((resolved.getImageUrl() == null || resolved.getImageUrl().isEmpty())
+                        && session.getImageUrl() != null && !session.getImageUrl().isEmpty()) {
+                    resolved.setImageUrl(session.getImageUrl());
+                    pushUserImageUrlToCloud(resolved);
+                }
+
                 currentUser = resolved;
                 UserSession.save(context, resolved);
                 Log.d(TAG, "تم مزامنة بيانات المستخدم من السحابة: " + resolved.getEmail());
@@ -316,7 +364,7 @@ public class DataManager {
                     toUpdate.setName(workingUser.getName().trim());
                 }
                 if (workingUser.getImageUrl() != null) {
-                    toUpdate.setImageUrl(workingUser.getImageUrl());
+                    toUpdate.setImageUrl(appWriteConn.normalizeStorageFileUrl(workingUser.getImageUrl()));
                 }
                 if (workingUser.getPricePerKw() > 0) {
                     toUpdate.setPricePerKw(workingUser.getPricePerKw());
@@ -331,9 +379,16 @@ public class DataManager {
                     if (workingUser.getPricePerKw() > 0) {
                         saved.setPricePerKw(workingUser.getPricePerKw());
                     }
+                    if (workingUser.getImageUrl() != null && !workingUser.getImageUrl().isEmpty()) {
+                        saved.setImageUrl(appWriteConn.normalizeStorageFileUrl(workingUser.getImageUrl()));
+                    }
                     currentUser = saved;
                     Log.d(TAG, "تم تحديث الملف الشخصي: " + saved.getName());
-                    callback.onSuccess(saved);
+                    if (result.warning != null && !result.warning.isEmpty()) {
+                        callback.onSuccess(saved, result.warning);
+                    } else {
+                        callback.onSuccess(saved);
+                    }
                 } else {
                     callback.onError(result.message != null ? result.message : "فشل تحديث الملف الشخصي");
                 }
@@ -853,25 +908,27 @@ public class DataManager {
             imageView.setImageResource(placeholderResId);
             return;
         }
-        
-        imageView.setTag(imageUrl);
+
+        imageUrl = appWriteConn.normalizeStorageFileUrl(imageUrl);
+        final String resolvedUrl = imageUrl;
+        imageView.setTag(resolvedUrl);
         imageView.setImageResource(placeholderResId);
         
         executor.execute(() -> {
-            byte[] imageData = appWriteConn.downloadStorageFile(imageUrl);
+            byte[] imageData = appWriteConn.downloadStorageFile(resolvedUrl);
             if (imageData == null || imageData.length == 0) {
-                Log.w(TAG, "loadImageIntoView: empty data for " + imageUrl);
+                Log.w(TAG, "loadImageIntoView: empty data for " + resolvedUrl);
                 return;
             }
             
             Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
             if (bitmap == null) {
-                Log.w(TAG, "loadImageIntoView: decode failed for " + imageUrl);
+                Log.w(TAG, "loadImageIntoView: decode failed for " + resolvedUrl);
                 return;
             }
             
             imageView.post(() -> {
-                if (imageUrl.equals(imageView.getTag())) {
+                if (resolvedUrl.equals(imageView.getTag())) {
                     imageView.setImageBitmap(bitmap);
                 }
             });
@@ -908,12 +965,50 @@ public class DataManager {
                         appWriteConn.uploadFile(imageBytes, fileName, "image/jpeg", null);
                 
                 if (result.success && result.data != null && result.data.fileUrl != null) {
-                    callback.onSuccess(result.data.fileUrl);
+                    callback.onSuccess(appWriteConn.normalizeStorageFileUrl(result.data.fileUrl));
                 } else {
                     callback.onError(result.message != null ? result.message : "فشل رفع الصورة");
                 }
             } catch (Exception e) {
                 Log.e(TAG, "خطأ في رفع الصورة", e);
+                callback.onError("خطأ في رفع الصورة: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * رفع صورة الملف الشخصي إلى Appwrite Storage
+     */
+    public void uploadProfileImage(Context context, Uri imageUri, DataCallback<String> callback) {
+        executor.execute(() -> {
+            try {
+                InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+                if (inputStream == null) {
+                    callback.onError("تعذر قراءة الصورة");
+                    return;
+                }
+
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                byte[] data = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(data)) != -1) {
+                    buffer.write(data, 0, bytesRead);
+                }
+                inputStream.close();
+
+                byte[] imageBytes = buffer.toByteArray();
+                String fileName = "profile_" + System.currentTimeMillis() + ".jpg";
+
+                AppWriteConn.OperationResult<AppWriteConn.FileInfo> result =
+                        appWriteConn.uploadFile(imageBytes, fileName, "image/jpeg", null);
+
+                if (result.success && result.data != null && result.data.fileUrl != null) {
+                    callback.onSuccess(appWriteConn.normalizeStorageFileUrl(result.data.fileUrl));
+                } else {
+                    callback.onError(result.message != null ? result.message : "فشل رفع الصورة");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "خطأ في رفع صورة الملف الشخصي", e);
                 callback.onError("خطأ في رفع الصورة: " + e.getMessage());
             }
         });

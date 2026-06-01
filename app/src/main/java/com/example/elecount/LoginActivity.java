@@ -200,17 +200,16 @@ public class LoginActivity extends AppCompatActivity {
         dataManager.loginUser(email, password, new DataManager.DataCallback<User>() {
             @Override
             public void onSuccess(User user) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-                    
-                    // حفظ حالة تسجيل الدخول
-                    saveLoginState(user);
-                    
-                    Toast.makeText(LoginActivity.this, 
-                        "مرحباً " + user.getName(), Toast.LENGTH_SHORT).show();
-                    
-                    // الانتقال للشاشة الرئيسية
-                    goToMainActivity();
+                dataManager.resolveSessionUser(LoginActivity.this, new DataManager.DataCallback<User>() {
+                    @Override
+                    public void onSuccess(User syncedUser) {
+                        finishLogin(syncedUser);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        finishLogin(user);
+                    }
                 });
             }
             
@@ -222,6 +221,16 @@ public class LoginActivity extends AppCompatActivity {
                         "خطأ: " + error, Toast.LENGTH_LONG).show();
                 });
             }
+        });
+    }
+
+    private void finishLogin(User user) {
+        runOnUiThread(() -> {
+            showLoading(false);
+            saveLoginState(user);
+            Toast.makeText(LoginActivity.this,
+                    "مرحباً " + user.getName(), Toast.LENGTH_SHORT).show();
+            goToMainActivity();
         });
     }
     
