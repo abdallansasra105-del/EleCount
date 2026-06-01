@@ -22,6 +22,9 @@ public class User {
     
     // رابط صورة المستخدم في التخزين السحابي
     private String imageUrl;
+
+    // سعر الكيلو واط الافتراضي للمستخدم (شيكل)
+    private double pricePerKw;
     
     // تاريخ إنشاء الحساب
     private long createdAt;
@@ -32,6 +35,7 @@ public class User {
     public User() {
         // يتم استخدامه من قبل Gson لإنشاء الكائن من JSON
         this.createdAt = System.currentTimeMillis();
+        this.pricePerKw = 0.60;
     }
     
     /**
@@ -45,6 +49,7 @@ public class User {
         this.email = email;
         this.password = password;
         this.createdAt = System.currentTimeMillis();
+        this.pricePerKw = 0.60;
     }
     
     // === Getters & Setters ===
@@ -88,6 +93,14 @@ public class User {
     
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public double getPricePerKw() {
+        return pricePerKw > 0 ? pricePerKw : 0.60;
+    }
+
+    public void setPricePerKw(double pricePerKw) {
+        this.pricePerKw = pricePerKw;
     }
     
     public long getCreatedAt() {

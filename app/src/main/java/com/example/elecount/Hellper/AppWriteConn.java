@@ -1235,18 +1235,35 @@ public class AppWriteConn {
     private final List<String> lastOmittedAttributes = new ArrayList<>();
     /** حقول devices التي يُنشئها التطبيق تلقائياً في Appwrite عند غيابها */
     private static final Map<String, String> DEVICES_AUTO_ATTRIBUTES = new HashMap<>();
+    private static final Map<String, String> USERS_AUTO_ATTRIBUTES = new HashMap<>();
     private final Set<String> provisionedAttributes = new HashSet<>();
     
     static {
         DEVICES_AUTO_ATTRIBUTES.put("imageUrl", "imageUrl:url:false:Image URL");
         DEVICES_AUTO_ATTRIBUTES.put("categoryName", "categoryName:string:false:Category Name");
+        USERS_AUTO_ATTRIBUTES.put("pricePerKw", "pricePerKw:float:false:Price per kW");
     }
     
     private String getAutoAttributeSchema(String collectionId, String attributeName) {
         if ("devices".equals(collectionId)) {
             return DEVICES_AUTO_ATTRIBUTES.get(attributeName);
         }
+        if ("users".equals(collectionId)) {
+            return USERS_AUTO_ATTRIBUTES.get(attributeName);
+        }
         return null;
+    }
+    
+    /**
+     * إنشاء الحقول الناقصة في users قبل الحفظ/التحديث
+     */
+    private void prefetchUserAttributes(String collection, Map<String, Object> payload, String tableName) {
+        if (!"users".equals(collection)) {
+            return;
+        }
+        if (payload.containsKey("pricePerKw")) {
+            ensureAttributeProvisioned(collection, "pricePerKw", tableName);
+        }
     }
     
     /**
@@ -1393,6 +1410,7 @@ public class AppWriteConn {
         Map<String, Object> payload = new HashMap<>(documentData);
         Set<String> autoCreateAttempted = new HashSet<>();
         prefetchDeviceAttributes(collection, payload, tableName);
+        prefetchUserAttributes(collection, payload, tableName);
         
         for (int attempt = 0; attempt < 10; attempt++) {
             try {
@@ -1460,6 +1478,7 @@ public class AppWriteConn {
         Map<String, Object> payload = new HashMap<>(documentData);
         Set<String> autoCreateAttempted = new HashSet<>();
         prefetchDeviceAttributes(collection, payload, tableName);
+        prefetchUserAttributes(collection, payload, tableName);
         
         for (int attempt = 0; attempt < 10; attempt++) {
             HttpURLConnection connection = null;

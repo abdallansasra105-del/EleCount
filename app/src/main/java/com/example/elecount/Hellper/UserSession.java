@@ -59,6 +59,7 @@ public final class UserSession {
         } else {
             editor.remove(KEY_USER_IMAGE);
         }
+        editor.putFloat(priceKey(user.getId()), (float) user.getPricePerKw());
         editor.apply();
     }
 
@@ -72,6 +73,8 @@ public final class UserSession {
         user.setName(prefs.getString(KEY_USER_NAME, ""));
         user.setEmail(prefs.getString(KEY_USER_EMAIL, ""));
         user.setImageUrl(prefs.getString(KEY_USER_IMAGE, null));
+        float savedPrice = prefs.getFloat(priceKey(user.getId()), (float) DEFAULT_PRICE_PER_KW);
+        user.setPricePerKw(savedPrice > 0 ? savedPrice : DEFAULT_PRICE_PER_KW);
         return user;
     }
 
@@ -85,6 +88,9 @@ public final class UserSession {
             return DEFAULT_PRICE_PER_KW;
         }
         User user = load(context);
+        if (user != null && user.getPricePerKw() > 0) {
+            return user.getPricePerKw();
+        }
         String userId = user != null ? user.getId() : "";
         return prefs(context).getFloat(priceKey(userId), (float) DEFAULT_PRICE_PER_KW);
     }
@@ -94,8 +100,12 @@ public final class UserSession {
             return;
         }
         User user = load(context);
-        String userId = user != null ? user.getId() : "";
-        prefs(context).edit().putFloat(priceKey(userId), (float) pricePerKw).apply();
+        if (user != null) {
+            user.setPricePerKw(pricePerKw);
+            save(context, user);
+            return;
+        }
+        prefs(context).edit().putFloat(priceKey(""), (float) pricePerKw).apply();
     }
 
     private static String priceKey(String userId) {

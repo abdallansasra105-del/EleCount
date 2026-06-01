@@ -135,6 +135,9 @@ public class DataManager {
                 if (user.getId() == null || user.getId().isEmpty()) {
                     user.setId(UUID.randomUUID().toString());
                 }
+                if (user.getPricePerKw() <= 0) {
+                    user.setPricePerKw(UserSession.DEFAULT_PRICE_PER_KW);
+                }
                 
                 // حفظ المستخدم في Appwrite
                 AppWriteConn.OperationResult<ArrayList<User>> result = 
@@ -237,25 +240,29 @@ public class DataManager {
                     return;
                 }
 
-                User resolved = session;
-                if (session.getId() == null || session.getId().isEmpty()) {
-                    User fromCloud = findUserByEmail(session.getEmail());
-                    if (fromCloud == null) {
-                        callback.onError("لم يُعثر على الحساب — سجّل خروجاً ثم ادخل مجدداً");
-                        return;
+                User fromCloud = null;
+                if (session.getId() != null && !session.getId().isEmpty()) {
+                    AppWriteConn.OperationResult<User> fetchResult =
+                            appWriteConn.getDataById(TABLE_USERS, session.getId(), TABLE_USERS, User.class);
+                    if (fetchResult.success && fetchResult.data != null) {
+                        fromCloud = fetchResult.data;
+                        if (fromCloud.getId() == null || fromCloud.getId().isEmpty()) {
+                            fromCloud.setId(session.getId());
+                        }
                     }
-                    if (session.getName() != null && !session.getName().isEmpty()) {
-                        fromCloud.setName(session.getName());
-                    }
-                    if (session.getImageUrl() != null && !session.getImageUrl().isEmpty()) {
-                        fromCloud.setImageUrl(session.getImageUrl());
-                    }
-                    resolved = fromCloud;
-                    UserSession.save(context, resolved);
-                    Log.d(TAG, "تم استكمال معرف المستخدم: " + resolved.getId());
+                }
+                if (fromCloud == null && session.getEmail() != null && !session.getEmail().isEmpty()) {
+                    fromCloud = findUserByEmail(session.getEmail());
+                }
+                if (fromCloud == null) {
+                    callback.onError("لم يُعثر على الحساب — سجّل خروجاً ثم ادخل مجدداً");
+                    return;
                 }
 
+                User resolved = fromCloud;
                 currentUser = resolved;
+                UserSession.save(context, resolved);
+                Log.d(TAG, "تم مزامنة بيانات المستخدم من السحابة: " + resolved.getEmail());
                 callback.onSuccess(resolved);
             } catch (Exception e) {
                 Log.e(TAG, "خطأ في استكمال جلسة المستخدم", e);
@@ -311,6 +318,9 @@ public class DataManager {
                 if (workingUser.getImageUrl() != null) {
                     toUpdate.setImageUrl(workingUser.getImageUrl());
                 }
+                if (workingUser.getPricePerKw() > 0) {
+                    toUpdate.setPricePerKw(workingUser.getPricePerKw());
+                }
 
                 AppWriteConn.OperationResult<User> result =
                         appWriteConn.updateData(toUpdate, TABLE_USERS, workingUser.getId(), TABLE_USERS);
@@ -318,6 +328,9 @@ public class DataManager {
                 if (result.success && result.data != null) {
                     User saved = result.data;
                     saved.setId(workingUser.getId());
+                    if (workingUser.getPricePerKw() > 0) {
+                        saved.setPricePerKw(workingUser.getPricePerKw());
+                    }
                     currentUser = saved;
                     Log.d(TAG, "تم تحديث الملف الشخصي: " + saved.getName());
                     callback.onSuccess(saved);
@@ -326,6 +339,68 @@ public class DataManager {
                 }
             } catch (Exception e) {
                 Log.e(TAG, "خطأ في تحديث الملف الشخصي", e);
+                callback.onError("خطأ: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * حفظ سعر الكيلو واط في حساب المستخدم على السحابة
+     */
+    public void updateUserPricePerKw(double pricePerKw, android.content.Context context,
+                                     DataCallback<User> callback) {
+        executor.execute(() -> {
+            try {
+                User workingUser = currentUser;
+                if (workingUser == null) {
+                    workingUser = UserSession.load(context);
+                }
+                if (workingUser == null) {
+                    callback.onError("غير مسجل");
+                    return;
+                }
+
+                if (workingUser.getId() == null || workingUser.getId().isEmpty()) {
+                    User fromCloud = findUserByEmail(workingUser.getEmail());
+                    if (fromCloud == null) {
+                        callback.onError("معرف المستخدم غير موجود — سجّل خروجاً ثم ادخل مجدداً");
+                        return;
+                    }
+                    workingUser = fromCloud;
+                }
+
+                AppWriteConn.OperationResult<User> fetchResult =
+                        appWriteConn.getDataById(TABLE_USERS, workingUser.getId(), TABLE_USERS, User.class);
+
+                User toUpdate;
+                if (fetchResult.success && fetchResult.data != null) {
+                    toUpdate = fetchResult.data;
+                    if (toUpdate.getId() == null || toUpdate.getId().isEmpty()) {
+                        toUpdate.setId(workingUser.getId());
+                    }
+                } else if (currentUser != null && workingUser.getId().equals(currentUser.getId())) {
+                    toUpdate = currentUser;
+                } else {
+                    toUpdate = workingUser;
+                }
+
+                toUpdate.setPricePerKw(pricePerKw);
+
+                AppWriteConn.OperationResult<User> result =
+                        appWriteConn.updateData(toUpdate, TABLE_USERS, workingUser.getId(), TABLE_USERS);
+
+                if (result.success) {
+                    User saved = result.data != null ? result.data : toUpdate;
+                    saved.setId(workingUser.getId());
+                    saved.setPricePerKw(pricePerKw);
+                    currentUser = saved;
+                    Log.d(TAG, "تم حفظ سعر الكهرباء في السحابة: " + pricePerKw);
+                    callback.onSuccess(saved);
+                } else {
+                    callback.onError(result.message != null ? result.message : "فشل حفظ سعر الكهرباء");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "خطأ في حفظ سعر الكهرباء", e);
                 callback.onError("خطأ: " + e.getMessage());
             }
         });

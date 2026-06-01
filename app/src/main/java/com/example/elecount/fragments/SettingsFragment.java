@@ -216,8 +216,31 @@ public class SettingsFragment extends Fragment {
         }
 
         savePriceButton.setEnabled(false);
-        UserSession.savePricePerKw(requireContext(), pricePerKw);
 
+        dataManager.updateUserPricePerKw(pricePerKw, requireContext(), new DataManager.DataCallback<User>() {
+            @Override
+            public void onSuccess(User user) {
+                if (!isAdded()) {
+                    return;
+                }
+                UserSession.save(requireContext(), user);
+                syncDevicesPrice(pricePerKw);
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) {
+                    return;
+                }
+                requireActivity().runOnUiThread(() -> {
+                    savePriceButton.setEnabled(true);
+                    Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
+    private void syncDevicesPrice(double pricePerKw) {
         dataManager.updateAllDevicesPricePerKw(pricePerKw, new DataManager.DataCallback<Integer>() {
             @Override
             public void onSuccess(Integer updatedCount) {
@@ -259,7 +282,10 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onSuccess(User result) {
                 if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> updateUserInfo());
+                    requireActivity().runOnUiThread(() -> {
+                        updateUserInfo();
+                        loadSavedPrice();
+                    });
                 }
             }
 
