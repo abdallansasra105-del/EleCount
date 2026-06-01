@@ -30,6 +30,9 @@ import com.example.elecount.Hellper.UserSession;
 import com.example.elecount.models.User;
 
 import java.io.File;
+import java.util.Locale;
+
+import com.google.android.material.button.MaterialButton;
 
 /**
  * Fragment الإعدادات — الملف الشخصي، التصنيفات، والحساب
@@ -43,6 +46,7 @@ public class SettingsFragment extends Fragment {
     private TextView profileEditHint;
     private CardView categoriesCard;
     private EditText priceInput;
+    private MaterialButton savePriceButton;
     private CardView authCard;
     private TextView authText;
 
@@ -114,6 +118,7 @@ public class SettingsFragment extends Fragment {
         profileEditHint = view.findViewById(R.id.profileEditHint);
         categoriesCard = view.findViewById(R.id.categoriesCard);
         priceInput = view.findViewById(R.id.priceInput);
+        savePriceButton = view.findViewById(R.id.savePriceButton);
         authCard = view.findViewById(R.id.authCard);
         authText = view.findViewById(R.id.authText);
     }
@@ -125,6 +130,8 @@ public class SettingsFragment extends Fragment {
             userEmail.setText(user.getEmail());
             authText.setText(R.string.settings_logout);
             profileEditHint.setVisibility(View.VISIBLE);
+            savePriceButton.setVisibility(View.VISIBLE);
+            loadSavedPrice();
 
             if (user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
                 dataManager.loadImageIntoView(user.getImageUrl(), userImage,
@@ -137,8 +144,14 @@ public class SettingsFragment extends Fragment {
             userEmail.setText("يعمل في وضع المحاكي");
             authText.setText(R.string.settings_login);
             profileEditHint.setVisibility(View.GONE);
+            savePriceButton.setVisibility(View.GONE);
             userImage.setImageResource(android.R.drawable.ic_menu_myplaces);
         }
+    }
+
+    private void loadSavedPrice() {
+        double price = UserSession.getPricePerKw(requireContext());
+        priceInput.setText(String.format(Locale.US, "%.2f", price));
     }
 
     private void setupListeners() {
@@ -167,11 +180,72 @@ public class SettingsFragment extends Fragment {
 
         categoriesCard.setOnClickListener(v -> openCategoriesFragment());
 
+        savePriceButton.setOnClickListener(v -> saveElectricityPrice());
+
         authCard.setOnClickListener(v -> {
             if (UserSession.isLoggedIn(requireContext())) {
                 logout();
             } else {
                 goToLogin();
+            }
+        });
+    }
+
+    private void saveElectricityPrice() {
+        if (!UserSession.isLoggedIn(requireContext())) {
+            Toast.makeText(requireContext(), R.string.settings_login_required, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String priceStr = priceInput.getText().toString().trim();
+        if (priceStr.isEmpty()) {
+            priceInput.setError(getString(R.string.error_empty_field));
+            return;
+        }
+
+        double pricePerKw;
+        try {
+            pricePerKw = Double.parseDouble(priceStr);
+            if (pricePerKw <= 0) {
+                priceInput.setError(getString(R.string.settings_price_invalid));
+                return;
+            }
+        } catch (NumberFormatException e) {
+            priceInput.setError(getString(R.string.settings_price_invalid));
+            return;
+        }
+
+        savePriceButton.setEnabled(false);
+        UserSession.savePricePerKw(requireContext(), pricePerKw);
+
+        dataManager.updateAllDevicesPricePerKw(pricePerKw, new DataManager.DataCallback<Integer>() {
+            @Override
+            public void onSuccess(Integer updatedCount) {
+                if (!isAdded()) {
+                    return;
+                }
+                requireActivity().runOnUiThread(() -> {
+                    savePriceButton.setEnabled(true);
+                    loadSavedPrice();
+                    String message = getString(R.string.settings_price_saved);
+                    if (updatedCount != null && updatedCount > 0) {
+                        message = message + " (" + updatedCount + " جهاز)";
+                    }
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) {
+                    return;
+                }
+                requireActivity().runOnUiThread(() -> {
+                    savePriceButton.setEnabled(true);
+                    Toast.makeText(requireContext(),
+                            getString(R.string.settings_price_saved) + "\n" + error,
+                            Toast.LENGTH_LONG).show();
+                });
             }
         });
     }

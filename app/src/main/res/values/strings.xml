@@ -83,7 +83,10 @@
     <string name="settings_profile">الملف الشخصي</string>
     <string name="settings_account">الحساب</string>
     <string name="settings_categories">إدارة التصنيفات</string>
-    <string name="settings_price">سعر الكيلو واط</string>
+    <string name="settings_price">سعر الكيلو واط (شيكل)</string>
+    <string name="settings_save_price">حفظ سعر الكهرباء</string>
+    <string name="settings_price_saved">تم حفظ سعر الكهرباء</string>
+    <string name="settings_price_invalid">أدخل سعراً صحيحاً أكبر من صفر</string>
     <string name="settings_currency">العملة</string>
     <string name="settings_logout">تسجيل خروج</string>
     <string name="settings_login">تسجيل دخول</string>

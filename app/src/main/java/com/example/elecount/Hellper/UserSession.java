@@ -17,6 +17,9 @@ public final class UserSession {
     private static final String KEY_USER_NAME = "userName";
     private static final String KEY_USER_EMAIL = "userEmail";
     private static final String KEY_USER_IMAGE = "userImageUrl";
+    private static final String KEY_PRICE_PER_KW = "pricePerKw";
+
+    public static final double DEFAULT_PRICE_PER_KW = 0.60;
 
     private UserSession() {
     }
@@ -74,6 +77,32 @@ public final class UserSession {
 
     public static void clear(Context context) {
         prefs(context).edit().clear().apply();
+    }
+
+    /** سعر الكيلو واط المحفوظ للمستخدم المسجّل */
+    public static double getPricePerKw(Context context) {
+        if (!isLoggedIn(context)) {
+            return DEFAULT_PRICE_PER_KW;
+        }
+        User user = load(context);
+        String userId = user != null ? user.getId() : "";
+        return prefs(context).getFloat(priceKey(userId), (float) DEFAULT_PRICE_PER_KW);
+    }
+
+    public static void savePricePerKw(Context context, double pricePerKw) {
+        if (!isLoggedIn(context)) {
+            return;
+        }
+        User user = load(context);
+        String userId = user != null ? user.getId() : "";
+        prefs(context).edit().putFloat(priceKey(userId), (float) pricePerKw).apply();
+    }
+
+    private static String priceKey(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            return KEY_PRICE_PER_KW;
+        }
+        return KEY_PRICE_PER_KW + "_" + userId;
     }
 
     public static void applyToDataManager(DataManager dataManager, Context context) {

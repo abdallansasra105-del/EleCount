@@ -166,13 +166,21 @@
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:hint="0.18"
+                    android:hint="0.60"
                     android:inputType="numberDecimal"
                     android:textSize="16sp" />
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/savePriceButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/settings_save_price"
+            app:cornerRadius="8dp" />
 
         <!-- إدارة الحساب -->
         <TextView

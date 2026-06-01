@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.elecount.R;
 import com.example.elecount.Hellper.DataManager;
+import com.example.elecount.Hellper.UserSession;
 import com.example.elecount.Hellper.DeviceHistoryDialog;
 import com.example.elecount.Hellper.UsageStatsHelper;
 import com.example.elecount.adapters.DeviceAdapter;
@@ -314,6 +315,7 @@ public class DevicesFragment extends Fragment {
                 saveDeviceWithOptionalImage(deviceToEdit, true, dialog, saveButton);
             } else {
                 Device newDevice = new Device(name, categoryName, power);
+                newDevice.setPricePerKw(UserSession.getPricePerKw(requireContext()));
                 saveDeviceWithOptionalImage(newDevice, false, dialog, saveButton);
             }
         });

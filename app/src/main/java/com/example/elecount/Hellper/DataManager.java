@@ -600,6 +600,48 @@ public class DataManager {
             }
         });
     }
+
+    /**
+     * تطبيق سعر الكيلو واط على جميع أجهزة المستخدم الحالي
+     */
+    public void updateAllDevicesPricePerKw(double pricePerKw, DataCallback<Integer> callback) {
+        executor.execute(() -> {
+            try {
+                AppWriteConn.OperationResult<ArrayList<Device>> result =
+                        appWriteConn.getData(TABLE_DEVICES, TABLE_DEVICES, Device.class);
+
+                if (!result.success || result.data == null) {
+                    callback.onError(result.message != null ? result.message : "فشل جلب الأجهزة");
+                    return;
+                }
+
+                int updated = 0;
+                String failMessage = null;
+                for (Device device : result.data) {
+                    if (currentUser == null || !currentUser.getId().equals(device.getUserId())) {
+                        continue;
+                    }
+                    device.setPricePerKw(pricePerKw);
+                    AppWriteConn.OperationResult<Device> updateResult =
+                            appWriteConn.updateData(device, TABLE_DEVICES, device.getId(), TABLE_DEVICES);
+                    if (updateResult.success) {
+                        updated++;
+                    } else if (failMessage == null) {
+                        failMessage = updateResult.message;
+                    }
+                }
+
+                if (updated == 0 && failMessage != null) {
+                    callback.onError(failMessage);
+                } else {
+                    callback.onSuccess(updated);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "خطأ في تحديث أسعار الأجهزة", e);
+                callback.onError("خطأ: " + e.getMessage());
+            }
+        });
+    }
     
     /**
      * حذف جهاز
