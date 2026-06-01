@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>توثيق تطبيق مدير الكهرباء</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin: 0; background: #f5f5f5; color: #212121; line-height: 1.7; direction: rtl; }
+header { background: linear-gradient(135deg, #FF9800, #F57C00); color: #fff; padding: 2rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+header h1 { margin: 0 0 .5rem; font-size: 2rem; }
+header p { margin: 0; opacity: .95; }
+nav.toc { background: #fff; padding: 1rem 2rem; border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 100; overflow-x: auto; white-space: nowrap; }
+nav.toc a { display: inline-block; margin-left: 1rem; color: #F57C00; text-decoration: none; font-weight: 600; }
+nav.toc a:hover { text-decoration: underline; }
+main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+section { background: #fff; border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+h2 { color: #F57C00; border-bottom: 2px solid #FFE0B2; padding-bottom: .5rem; }
+h3 { color: #E65100; margin-top: 1.5rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { border: 1px solid #e0e0e0; padding: .6rem .8rem; text-align: right; }
+th { background: #FFF3E0; color: #E65100; }
+tr:nth-child(even) { background: #fafafa; }
+.screen-card { border: 1px solid #FFE0B2; border-radius: 10px; padding: 1rem; margin: 1rem 0; background: #FFFBF5; }
+.flow { background: #263238; color: #eceff1; padding: 1rem; border-radius: 8px; font-family: Consolas, monospace; font-size: .9rem; overflow-x: auto; direction: ltr; text-align: left; }
+.explain { background: #E8F5E9; border-right: 4px solid #4CAF50; padding: 1rem 1.2rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: .82rem; line-height: 1.45; direction: ltr; text-align: left; max-height: 600px; overflow-y: auto; }
+pre.large { max-height: none; }
+code { font-family: Consolas, 'Courier New', monospace; }
+.file-title { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.badge { background: #FF9800; color: #fff; padding: .2rem .6rem; border-radius: 20px; font-size: .75rem; }
+ul { padding-right: 1.5rem; }
+footer { text-align: center; padding: 2rem; color: #757575; font-size: .9rem; }
+article { margin-bottom: 2.5rem; border-bottom: 1px dashed #e0e0e0; padding-bottom: 1.5rem; }
+</style></head><body><header>
+<h1>⚡ مدير الكهرباء — EleCount</h1>
+<p>توثيق التطبيق وتخطيط الشاشات</p>
+</header>
+<nav class="toc">
+<a href="#overview">نظرة عامة</a>
+<a href="#architecture">البنية</a>
+<a href="#navigation">التنقل</a>
+<a href="#screens">الشاشات</a>
+<a href="#data">البيانات</a>
+<a href="#appwrite">Appwrite</a>
+<a href="#calc">الحسابات</a>
+<a href="elecount-source-codes.html">الأكواد</a>
+</nav>
+<main><section id="overview">
+  <h2>1. نظرة عامة</h2>
+  <p>تطبيق Android باللغة العربية (RTL) لإدارة استهلاك الكهرباء المنزلي. يعمل مع <strong>Appwrite</strong> كقاعدة سحابية، والعملة الافتراضية <strong>شيكل</strong>.</p>
+  <table>
+    <tr><th>البند</th><th>القيمة</th></tr>
+    <tr><td>اسم الحزمة</td><td><code>com.example.elecount</code></td></tr>
+    <tr><td>اللغة</td><td>Java</td></tr>
+    <tr><td>الحد الأدنى Android</td><td>API 24 (Android 7.0)</td></tr>
+    <tr><td>التصميم</td><td>Material Design — لون رئيسي برتقالي #FF9800</td></tr>
+    <tr><td>التخزين</td><td>سحابة (Appwrite) + SharedPreferences للجلسة</td></tr>
+  </table>
+  <h3>المميزات</h3>
+  <ul>
+    <li>تتبع الأجهزة وتشغيلها/إيقافها مع مؤقت حي وتكلفة لحظية</li>
+    <li>حفظ سجل كل جلسة في <code>usage_records</code></li>
+    <li>إحصائيات: السجلات، أغلى/أرخص جهاز، التكلفة الإجمالية</li>
+    <li>محاكي تكلفة بدون تسجيل دخول</li>
+    <li>ملف شخصي: تعديل الاسم والصورة</li>
+    <li>تصنيفات مخصصة (مطبخ، صالة، …)</li>
+  </ul>
+</section>
+
+<section id="architecture">
+  <h2>2. البنية البرمجية</h2>
+  <div class="flow">app/
+├── MainActivity.java
+├── LoginActivity.java
+├── fragments/ → Home, Devices, Simulator, Settings, Categories
+├── adapters/  → Device, Category, UsageRecord
+├── models/    → User, Device, Category, UsageRecord
+└── Hellper/   → DataManager, AppWriteConn, UserSession, …</div>
+  <h3>تدفق البيانات</h3>
+  <div class="flow">Fragment → DataManager → AppWriteConn → Appwrite Cloud
+                    ↓
+              UserSession (SharedPreferences)</div>
+</section>
+
+<section id="navigation">
+  <h2>3. تخطيط التنقل</h2>
+  <div class="flow">LoginActivity ──► MainActivity
+                        │
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+   HomeFragment   DevicesFragment  SimulatorFragment
+        │               │               │
+        └───────────────┴───────────────┘
+                        │
+                 SettingsFragment → CategoriesFragment</div>
+  <p>الشريط السفلي: <strong>الرئيسية | الأجهزة | المحاكي | الإعدادات</strong> (الأسماء ظاهرة دائماً)</p>
+</section>
+
+<section id="screens">
+  <h2>4. تخطيط الشاشات</h2>
+
+  <div class="screen-card">
+    <h3>4.1 LoginActivity — تسجيل الدخول</h3>
+    <p><code>activity_login.xml</code> + <code>LoginActivity.java</code></p>
+    <ul>
+      <li>تسجيل دخول / إنشاء حساب / دخول كضيف</li>
+      <li>حفظ الجلسة عبر <code>UserSession</code></li>
+    </ul>
+  </div>
+
+  <div class="screen-card">
+    <h3>4.2 MainActivity — الهيكل</h3>
+    <ul>
+      <li><strong>headerContainer</strong> — Toolbar برتقالي</li>
+      <li><strong>fragmentContainer</strong> — محتوى الشاشة</li>
+      <li><strong>bottomNavigation</strong> — التبويبات</li>
+    </ul>
+  </div>
+
+  <div class="screen-card">
+    <h3>4.3 HomeFragment — الرئيسية</h3>
+    <table>
+      <tr><th>العنصر</th><th>الوظيفة</th></tr>
+      <tr><td>totalCostText</td><td>سجلات + جلسات حية</td></tr>
+      <tr><td>runningDevicesText</td><td>عدد الأجهزة الشغّالة</td></tr>
+      <tr><td>currentConsumptionText</td><td>مجموع kW</td></tr>
+      <tr><td>recordsSessions/Energy/Cost</td><td>إحصائيات السجلات</td></tr>
+      <tr><td>mostExpensive / cheapest</td><td>أغلى وأرخص جهاز</td></tr>
+      <tr><td>runningDevicesRecycler</td><td>الأجهزة العاملة</td></tr>
+    </table>
+  </div>
+
+  <div class="screen-card">
+    <h3>4.4 DevicesFragment — الأجهزة</h3>
+    <ul>
+      <li>قائمة كل الأجهزة + زر (+)</li>
+      <li>بطاقة: صورة، مؤقت، تكلفة، تشغيل/إيقاف، سجل</li>
+      <li>عند الإيقاف → UsageRecord في السحابة</li>
+    </ul>
+  </div>
+
+  <div class="screen-card">
+    <h3>4.5 SimulatorFragment — المحاكي</h3>
+    <ul><li>جهاز + مدة + وحدة → تكلفة وkWh متوقعة</li></ul>
+  </div>
+
+  <div class="screen-card">
+    <h3>4.6 SettingsFragment — الإعدادات</h3>
+    <ul>
+      <li>بطاقة الملف → تعديل اسم وصورة</li>
+      <li>التصنيفات، سعر kW، دخول/خروج</li>
+    </ul>
+  </div>
+
+  <div class="screen-card">
+    <h3>4.7 CategoriesFragment + DeviceHistoryDialog</h3>
+    <ul>
+      <li>CRUD للتصنيفات</li>
+      <li>نافذة سجل جلسات جهاز واحد</li>
+    </ul>
+  </div>
+</section>
+
+<section id="data">
+  <h2>5. جداول Appwrite</h2>
+  <table>
+    <tr><th>Collection</th><th>الحقول</th></tr>
+    <tr><td>users</td><td>name, email, password, imageUrl</td></tr>
+    <tr><td>categories</td><td>name, userId, deviceCount</td></tr>
+    <tr><td>devices</td><td>name, categoryId, powerConsumptionKw, pricePerKw, isRunning, startTime, imageUrl</td></tr>
+    <tr><td>usage_records</td><td>deviceId, startTime, endTime, cost, energyConsumed, usagerecordId</td></tr>
+  </table>
+  <div class="flow">التكلفة = kW × ساعات × سعر الكيلو واط</div>
+</section>
+
+<section id="appwrite">
+  <h2>6. Appwrite</h2>
+  <table>
+    <tr><th>إعداد</th><th>قيمة</th></tr>
+    <tr><td>BASE_URL</td><td>https://fra.cloud.appwrite.io/v1</td></tr>
+    <tr><td>DATABASE</td><td>690c6475001777021682</td></tr>
+    <tr><td>STORAGE</td><td>690c64a7001ffa26ef65</td></tr>
+  </table>
+</section>
+
+<section id="calc">
+  <h2>7. أمثلة</h2>
+  <table>
+    <tr><th>جهاز</th><th>kW</th><th>8 س × 0.60 شيكل</th></tr>
+    <tr><td>تكييف</td><td>2.5</td><td>12.00</td></tr>
+    <tr><td>ثلاجة</td><td>0.15</td><td>0.72</td></tr>
+  </table>
+</section>
+</main><footer>مدير الكهرباء EleCount — توثيق التطبيق — 2026 | <a href="elecount-source-codes.html" style="color:#F57C00;">ملف الأكواد</a></footer>
+</body>
+</html>

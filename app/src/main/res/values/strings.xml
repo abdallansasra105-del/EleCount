@@ -1,5 +1,153 @@
 <resources>
-    <string name="app_name">EleCount</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_name">مدير الكهرباء</string>
+    <string name="connection_checking">جارٍ التحقق من الاتصال…</string>
+    <string name="connection_ok">تم الاتصال بنجاح ✓</string>
+    <string name="connection_failed">فشل الاتصال ✗</string>
+    
+    <!-- القوائم الرئيسية -->
+    <string name="menu_home">الرئيسية</string>
+    <string name="menu_devices">الأجهزة</string>
+    <string name="menu_simulator">المحاكي</string>
+    <string name="menu_settings">الإعدادات</string>
+    
+    <!-- الرئيسية -->
+    <string name="home_welcome">مرحباً</string>
+    <string name="home_total_cost">التكلفة الإجمالية</string>
+    <string name="home_running_devices">الأجهزة العاملة</string>
+    <string name="home_total_devices">إجمالي الأجهزة</string>
+    <string name="home_current_consumption">الاستهلاك الحالي</string>
+    <string name="home_no_devices">لا توجد أجهزة عاملة حالياً</string>
+    <string name="home_records_stats">إحصائيات السجلات</string>
+    <string name="home_records_sessions">عدد الجلسات</string>
+    <string name="home_records_energy">إجمالي الاستهلاك</string>
+    <string name="home_records_cost">تكلفة السجلات</string>
+    <string name="home_most_expensive">أغلى جهاز</string>
+    <string name="home_cheapest">أرخص جهاز</string>
+    <string name="home_no_records">لا توجد سجلات بعد</string>
+    
+    <!-- الأجهزة -->
+    <string name="devices_title">إدارة الأجهزة</string>
+    <string name="devices_add">إضافة جهاز</string>
+    <string name="devices_no_devices">لا توجد أجهزة. اضغط + لإضافة جهاز جديد</string>
+    <string name="device_name">اسم الجهاز</string>
+    <string name="device_category">التصنيف</string>
+    <string name="device_power">الاستهلاك (kW)</string>
+    <string name="device_image">صورة الجهاز</string>
+    <string name="device_start">تشغيل</string>
+    <string name="device_stop">إيقاف</string>
+    <string name="device_running">يعمل</string>
+    <string name="device_stopped">متوقف</string>
+    <string name="device_current_cost">التكلفة الحالية</string>
+    <string name="device_running_duration">مدة التشغيل</string>
+    <string name="device_live_cost">التكلفة الآن</string>
+    <string name="device_total_cost">التكلفة الإجمالية</string>
+    <string name="device_view_history">سجل الاستخدام</string>
+    <string name="device_history_title">سجل: %1$s</string>
+    <string name="device_history_empty">لا توجد جلسات مسجّلة بعد</string>
+    <string name="device_history_total">إجمالي السجل: %1$s</string>
+    <string name="usage_record_duration">المدة: %1$s</string>
+    <string name="usage_record_energy">الاستهلاك: %1$.2f kWh</string>
+    <string name="close">إغلاق</string>
+    <string name="device_delete">حذف</string>
+    <string name="device_edit">تعديل</string>
+    <string name="device_edit_title">تعديل الجهاز</string>
+    
+    <!-- المحاكي -->
+    <string name="simulator_title">محاكي التكلفة</string>
+    <string name="simulator_description">احسب التكلفة المتوقعة لتشغيل جهاز</string>
+    <string name="simulator_select_device">اختر جهاز</string>
+    <string name="simulator_duration">مدة التشغيل</string>
+    <string name="simulator_hours">ساعات</string>
+    <string name="simulator_days">أيام</string>
+    <string name="simulator_months">أشهر</string>
+    <string name="simulator_calculate">احسب</string>
+    <string name="simulator_result">النتيجة</string>
+    <string name="simulator_estimated_cost">التكلفة المتوقعة</string>
+    <string name="simulator_energy_consumed">الطاقة المستهلكة</string>
+    <string name="simulator_no_device">الرجاء اختيار جهاز</string>
+    
+    <!-- التصنيفات -->
+    <string name="categories_title">التصنيفات</string>
+    <string name="categories_add">إضافة تصنيف</string>
+    <string name="categories_no_categories">لا توجد تصنيفات</string>
+    <string name="category_name">اسم التصنيف</string>
+    <string name="category_device_count">عدد الأجهزة</string>
+    <string name="category_delete">حذف</string>
+    <string name="category_edit">تعديل</string>
+    
+    <!-- الإعدادات -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_profile">الملف الشخصي</string>
+    <string name="settings_account">الحساب</string>
+    <string name="settings_categories">إدارة التصنيفات</string>
+    <string name="settings_price">سعر الكيلو واط</string>
+    <string name="settings_currency">العملة</string>
+    <string name="settings_logout">تسجيل خروج</string>
+    <string name="settings_login">تسجيل دخول</string>
+    <string name="settings_register">إنشاء حساب</string>
+    <string name="settings_edit_profile">تعديل الملف الشخصي</string>
+    <string name="settings_edit_profile_hint">اضغط لتعديل الاسم والصورة</string>
+    <string name="settings_change_photo">تغيير الصورة</string>
+    <string name="settings_profile_saved">تم حفظ الملف الشخصي</string>
+    <string name="settings_login_required">سجّل دخولك لتعديل الملف الشخصي</string>
+    
+    <!-- تسجيل الدخول والتسجيل -->
+    <string name="login_title">تسجيل الدخول</string>
+    <string name="login_email">البريد الإلكتروني</string>
+    <string name="login_password">كلمة المرور</string>
+    <string name="login_button">دخول</string>
+    <string name="login_no_account">ليس لديك حساب؟</string>
+    <string name="login_create_account">إنشاء حساب جديد</string>
+    
+    <string name="register_title">إنشاء حساب جديد</string>
+    <string name="register_name">الاسم الكامل</string>
+    <string name="register_email">البريد الإلكتروني</string>
+    <string name="register_password">كلمة المرور</string>
+    <string name="register_confirm_password">تأكيد كلمة المرور</string>
+    <string name="register_button">تسجيل</string>
+    <string name="register_has_account">لديك حساب؟</string>
+    <string name="register_login">تسجيل الدخول</string>
+    
+    <!-- رسائل عامة -->
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="delete">حذف</string>
+    <string name="edit">تعديل</string>
+    <string name="add">إضافة</string>
+    <string name="confirm">تأكيد</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+    <string name="ok">موافق</string>
+    <string name="error">خطأ</string>
+    <string name="success">نجح</string>
+    <string name="loading">جارٍ التحميل…</string>
+    
+    <!-- رسائل التحذير -->
+    <string name="delete_device_confirm">هل تريد حذف هذا الجهاز؟</string>
+    <string name="delete_category_confirm">هل تريد حذف هذا التصنيف؟</string>
+    <string name="logout_confirm">هل تريد تسجيل الخروج؟</string>
+    
+    <!-- رسائل الأخطاء -->
+    <string name="error_empty_field">هذا الحقل مطلوب</string>
+    <string name="error_invalid_email">البريد الإلكتروني غير صحيح</string>
+    <string name="error_password_mismatch">كلمات المرور غير متطابقة</string>
+    <string name="error_connection">خطأ في الاتصال بالخادم</string>
+    
+    <!-- الوحدات -->
+    <string name="unit_kw">كيلو واط</string>
+    <string name="unit_kwh">كيلو واط/ساعة</string>
+    <string name="unit_hour">ساعة</string>
+    <string name="unit_hours">ساعات</string>
+    <string name="unit_day">يوم</string>
+    <string name="unit_days">أيام</string>
+    <string name="unit_month">شهر</string>
+    <string name="unit_months">أشهر</string>
+    <string name="unit_currency">شيكل</string>
+    
+    <!-- اختيار الصورة -->
+    <string name="image_select">اختر صورة</string>
+    <string name="image_camera">الكاميرا</string>
+    <string name="image_gallery">المعرض</string>
+    <string name="permission_camera">التطبيق يحتاج إذن الكاميرا</string>
+    <string name="permission_storage">التطبيق يحتاج إذن التخزين</string>
 </resources>

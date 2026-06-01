@@ -12,8 +12,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -34,22 +32,9 @@ android {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.constraintlayout)
-
-    // JSON handling
-    implementation("com.google.code.gson:gson:2.10.1")
-
-    // Java SDK for Appwrite (Alternative from GitHub) - Temporarily removed
-    // implementation("online.bingzi:sdk-for-java:0.8")
-    
-    // Glide for image loading
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    
-    // OkHttp for network requests
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(libs.activity)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    implementation(libs.gson)
+    implementation(libs.constraintlayout)
+    implementation(libs.recyclerview)
+    implementation(libs.cardview)
 }
